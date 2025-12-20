@@ -1,0 +1,2261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nano Banana - nano banana AI圈火爆的"又小又快"图片生成模型</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-yellow: #FFD700;
+            --dark-yellow: #FFA500;
+            --light-yellow: #FFFFE0;
+            --bg-black: #0a0a0a;
+            --bg-dark: #1a1a1a;
+            --text-light: #e0e0e0;
+            --text-white: #ffffff;
+            --accent-gray: #333333;
+            --gradient: linear-gradient(135deg, var(--primary-yellow), var(--dark-yellow));
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-black);
+            color: var(--text-light);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-yellow);
+            border-radius: 5px;
+        }
+
+        /* 导航栏 */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1rem 0;
+            transition: all 0.3s ease;
+        }
+
+        nav.scrolled {
+            box-shadow: 0 2px 20px rgba(255, 215, 0, 0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-yellow);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-yellow);
+        }
+
+        /* 英雄区域 */
+        .hero {
+            padding: 8rem 2rem 4rem;
+            text-align: center;
+            position: relative;
+            background: radial-gradient(circle at center, rgba(255, 215, 0, 0.05) 0%, transparent 70%);
+        }
+
+        .hero::before {
+            content: '🍌';
+            position: absolute;
+            font-size: 300px;
+            opacity: 0.03;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5)); }
+            to { filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.8)); }
+        }
+
+        .hero .subtitle {
+            font-size: 1.3rem;
+            color: var(--text-white);
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient);
+            color: var(--bg-black);
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary-yellow);
+            border: 2px solid var(--primary-yellow);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-yellow);
+            color: var(--bg-black);
+        }
+
+        /* 章节样式 */
+        .section {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            color: var(--primary-yellow);
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 3px;
+            background: var(--gradient);
+            margin: 1rem auto;
+            border-radius: 2px;
+        }
+
+        /* 特点卡片 */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: var(--bg-dark);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-yellow);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            color: var(--primary-yellow);
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            color: var(--text-white);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        /* 对比表格 */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            background: var(--bg-dark);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--accent-gray);
+        }
+
+        .comparison-table th {
+            background: rgba(255, 215, 0, 0.1);
+            color: var(--primary-yellow);
+            font-weight: 600;
+        }
+
+        .comparison-table tr:hover {
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        .comparison-table .highlight {
+            color: var(--primary-yellow);
+            font-weight: bold;
+        }
+
+        /* FAQ部分 */
+        .faq-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: var(--bg-dark);
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+
+        .faq-question {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            color: var(--text-white);
+            font-weight: 600;
+        }
+
+        .faq-question:hover {
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        .faq-question.active {
+            color: var(--primary-yellow);
+        }
+
+        .faq-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .faq-question.active .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            padding: 0 1.5rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            color: var(--text-light);
+        }
+
+        .faq-answer.active {
+            padding: 1.5rem;
+            max-height: 500px;
+        }
+
+        /* 评价卡片 */
+        .testimonials {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .testimonial-card {
+            background: var(--bg-dark);
+            padding: 2rem;
+            border-radius: 15px;
+            position: relative;
+            border-left: 4px solid var(--primary-yellow);
+        }
+
+        .testimonial-card .quote {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: var(--text-light);
+        }
+
+        .testimonial-card .author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .author-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .author-info h4 {
+            color: var(--text-white);
+            margin-bottom: 0.2rem;
+        }
+
+        .author-info p {
+            color: var(--primary-yellow);
+            font-size: 0.9rem;
+        }
+
+        /* 统计数据 */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 2rem;
+            background: var(--bg-dark);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary-yellow);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        /* 价格卡片 */
+        .pricing {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .pricing-card {
+            background: var(--bg-dark);
+            padding: 2.5rem;
+            border-radius: 20px;
+            text-align: center;
+            position: relative;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-card.featured {
+            border-color: var(--primary-yellow);
+            transform: scale(1.05);
+        }
+
+        .pricing-card.featured::before {
+            content: '推荐';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient);
+            color: var(--bg-black);
+            padding: 0.5rem 2rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-yellow);
+        }
+
+        .pricing-card.featured:hover {
+            transform: scale(1.05) translateY(-5px);
+        }
+
+        .plan-name {
+            font-size: 1.5rem;
+            color: var(--primary-yellow);
+            margin-bottom: 1rem;
+        }
+
+        .plan-price {
+            font-size: 3rem;
+            color: var(--text-white);
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-price span {
+            font-size: 1rem;
+            color: var(--text-light);
+        }
+
+        .plan-features {
+            list-style: none;
+            margin: 2rem 0;
+        }
+
+        .plan-features li {
+            padding: 0.5rem 0;
+            color: var(--text-light);
+        }
+
+        .plan-features li::before {
+            content: '✓ ';
+            color: var(--primary-yellow);
+            font-weight: bold;
+        }
+
+        /* 步骤指南 */
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .step-card {
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient);
+            color: var(--bg-black);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0 auto 1.5rem;
+        }
+
+        .step-card h3 {
+            color: var(--primary-yellow);
+            margin-bottom: 1rem;
+        }
+
+        /* 联系表单 */
+        .contact-form {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--bg-dark);
+            padding: 3rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--primary-yellow);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            background: var(--bg-black);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 10px;
+            color: var(--text-white);
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-yellow);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-dark);
+            padding: 3rem 2rem 1rem;
+            margin-top: 5rem;
+            border-top: 1px solid rgba(255, 215, 0, 0.1);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h4 {
+            color: var(--primary-yellow);
+            margin-bottom: 1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            padding: 0.5rem 0;
+        }
+
+        .footer-section ul li a {
+            color: var(--text-light);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section ul li a:hover {
+            color: var(--primary-yellow);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--accent-gray);
+            color: var(--text-light);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-yellow);
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: var(--primary-yellow);
+            color: var(--bg-black);
+            transform: scale(1.1);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero .subtitle {
+                font-size: 1.1rem;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .testimonials {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .social-links {
+                justify-content: center;
+            }
+        }
+
+        /* 动画 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-on-scroll {
+            opacity: 0;
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        /* 加载动画 */
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 215, 0, 0.1);
+            border-top-color: var(--primary-yellow);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 通知样式 */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--bg-dark);
+            color: var(--primary-yellow);
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            border: 1px solid var(--primary-yellow);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        /* 代码块样式 */
+        .code-block {
+            background: var(--bg-black);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-block pre {
+            color: var(--text-light);
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .code-block::before {
+            content: 'CODE';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: var(--primary-yellow);
+            color: var(--bg-black);
+            padding: 0.2rem 0.8rem;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        /* 徽章样式 */
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            background: var(--gradient);
+            color: var(--bg-black);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 0.5rem;
+        }
+
+        /* 进度条 */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-dark);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient);
+            width: 0;
+            transition: width 1s ease;
+        }
+
+        /* 选项卡 */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab.active {
+            color: var(--primary-yellow);
+        }
+
+        .tab::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .tab.active::after {
+            transform: scaleX(1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeInUp 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <span>🍌</span>
+                <span>Nano Banana</span>
+                <span class="badge" style="font-size: 0.6rem; margin-left: 0.5rem;">AI圈热梗</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#features">特点</a></li>
+                <li><a href="#comparison">对比</a></li>
+                <li><a href="#testimonials">评价</a></li>
+                <li><a href="#pricing">价格</a></li>
+                <li><a href="#faq">FAQ</a></li>
+                <li><a href="#contact">联系</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <section class="hero">
+        <h1>🍌 Nano Banana</h1>
+        <p class="subtitle">nano banana - AI圈火爆的"又小又快"图片生成模型</p>
+        <p style="color: var(--text-light); margin-bottom: 1rem;">揭秘：为什么nano banana这个"非官方"模型让全网疯狂？</p>
+        <p style="color: var(--primary-yellow); font-style: italic; margin-bottom: 2rem;">
+            nano banana 不是官方名称，而是 AI 圈子里流传的"绰号/黑话"
+        </p>
+        <div class="cta-buttons">
+            <button class="btn btn-primary">
+                <i class="fas fa-rocket"></i>
+                立即体验 nano banana
+            </button>
+            <a href="#features" class="btn btn-secondary">
+                <i class="fas fa-play-circle"></i>
+                了解 nano banana
+            </a>
+        </div>
+    </section>
+
+    <!-- 核心特点 -->
+    <section id="features" class="section">
+        <h2 class="section-title">为什么选择 Nano Banana？</h2>
+        <p style="text-align: center; margin-bottom: 2rem; color: var(--text-white); font-size: 1.2rem;">
+            这不是一个bug，而是一个feature。 nano banana 已经成为 AI 圈最热门的"黑话"
+        </p>
+        <p style="text-align: center; margin-bottom: 3rem; color: var(--primary-yellow); font-style: italic;">
+            理解 nano banana，就是理解当前的 AI 图片生成市场格局
+        </p>
+
+        <div class="features">
+            <div class="feature-card animate-on-scroll">
+                <div class="feature-icon">⚡</div>
+                <h3>极速出图</h3>
+                <p>3-10秒完成图片生成，支持批量处理，不掉线、不排队、随时可用</p>
+            </div>
+
+            <div class="feature-card animate-on-scroll">
+                <div class="feature-icon">🧠</div>
+                <h3>零门槛上手</h3>
+                <p>一句话就能生成精美图片，无需学习复杂参数，新手也能快速上手</p>
+            </div>
+
+            <div class="feature-card animate-on-scroll">
+                <div class="feature-icon">💰</div>
+                <h3>超低成本</h3>
+                <p>批量生成不心疼，平台敢于让你无限生成、批量跑、自动化</p>
+            </div>
+
+            <div class="feature-card animate-on-scroll">
+                <div class="feature-icon">✅</div>
+                <h3>稳定可靠</h3>
+                <p>人物不容易崩，手脚比例相对正常，构图不会太离谱，商用无忧</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 概念定义 -->
+    <section class="section" style="background: var(--bg-dark);">
+        <h2 class="section-title">真实身份揭秘</h2>
+
+        <div class="animate-on-scroll" style="margin-bottom: 3rem;">
+            <h3 style="color: var(--primary-yellow); margin-bottom: 1rem;">🏷️ 社区昵称维度</h3>
+            <ul style="list-style: none; padding-left: 0;">
+                <li style="margin-bottom: 1rem;">
+                    <span style="color: var(--primary-yellow); font-size: 1.5rem; margin-right: 0.5rem;">❌</span>
+                    <span style="color: var(--text-white);">不是论文名：你不会在任何学术论文中找到这个名称</span>
+                </li>
+                <li style="margin-bottom: 1rem;">
+                    <span style="color: var(--primary-yellow); font-size: 1.5rem; margin-right: 0.5rem;">❌</span>
+                    <span style="color: var(--text-white);">不是官网名：OpenAI、Google等公司都没有正式发布过这个产品</span>
+                </li>
+                <li style="margin-bottom: 1rem;">
+                    <span style="color: var(--primary-yellow); font-size: 1.5rem; margin-right: 0.5rem;">✅</span>
+                    <span style="color: var(--text-white);">是社区叫法：从开发者圈子到普通用户，大家心照不宣地使用这个代号</span>
+                </li>
+                <li style="margin-bottom: 1rem;">
+                    <span style="color: var(--primary-yellow); font-size: 1.5rem; margin-right: 0.5rem;">✅</span>
+                    <span style="color: var(--text-white);">是行业黑话：就像"老铁""666"一样，它已经成为一个文化符号</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="animate-on-scroll">
+            <h3 style="color: var(--primary-yellow); margin-bottom: 1rem;">🍌 命名逻辑解析</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div style="background: var(--bg-black); padding: 2rem; border-radius: 15px; border-left: 4px solid var(--primary-yellow);">
+                    <h4 style="color: var(--primary-yellow); margin-bottom: 1rem;">"nano"的含义：</h4>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li>📏 模型体积小</li>
+                        <li>⚡ 推理速度快</li>
+                        <li>💰 成本低廉</li>
+                        <li>🏭 工业化友好</li>
+                    </ul>
+                </div>
+                <div style="background: var(--bg-black); padding: 2rem; border-radius: 15px; border-left: 4px solid var(--dark-yellow);">
+                    <h4 style="color: var(--dark-yellow); margin-bottom: 1rem;">"banana"的由来：</h4>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li>🧪 敏感词测试</li>
+                        <li>🎭 暗号文化</li>
+                        <li>😂 玩笑传播</li>
+                        <li>🔒 保密需求</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 为什么火了 -->
+    <section class="section">
+        <h2 class="section-title">🔥 Nano Banana 火爆全网的深层原因</h2>
+        <p style="text-align: center; color: var(--text-light); margin-bottom: 3rem; font-size: 1.2rem;">
+            不是因为最强，而是多种因素叠加形成的"现象级走红"
+        </p>
+
+        <!-- 一句话结论 -->
+        <div class="animate-on-scroll" style="background: var(--bg-dark); padding: 2rem; border-radius: 15px; margin-bottom: 3rem; border: 1px solid rgba(255, 215, 0, 0.1);">
+            <h3 style="color: var(--primary-yellow); margin-bottom: 1rem; text-align: center;">
+                🎯 一句话核心结论
+            </h3>
+            <p style="text-align: center; font-size: 1.1rem; color: var(--text-white);">
+                nano banana 火了，不是因为最强，而是"<strong>刚刚好</strong>"<br>
+                刚好：够好用 + 够便宜 + 够容易传播 + 够有梗
+            </p>
+        </div>
+
+        <!-- 六大原因详细分析 -->
+        <div class="animate-on-scroll">
+            <h3 style="color: var(--primary-yellow); margin-bottom: 2rem;">深度解析：六大核心驱动力</h3>
+
+            <!-- 原因1 -->
+            <div style="background: var(--bg-dark); padding: 2rem; border-radius: 15px; margin-bottom: 2rem; border-left: 4px solid var(--primary-yellow);">
+                <h4 style="color: var(--primary-yellow); margin-bottom: 1rem;">
+                    1️⃣ 名字本身就很"病毒式" 🍌（非常关键）
+                </h4>
+                <p style="margin-bottom: 1rem; color: var(--text-white);">
+                    说实话，这是很多模型做不到的一点。
+                </p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <div style="background: var(--bg-black); padding: 1rem; border-radius: 10px; text-align: center;">
+                        <span style="color: var(--text-light);">❌ Stable Diffusion</span>
+                        <br><span style="color: var(--primary-yellow); font-size: 0.9rem;">技术味太重</span>
+                    </div>
+                    <div style="background: var(--bg-black); padding: 1rem; border-radius: 10px; text-align: center;">
+                        <span style="color: var(--text-light);">❌ DALL·E</span>
+                        <br><span style="color: var(--primary-yellow); font-size: 0.9rem;">像产品名</span>
+                    </div>
+                    <div style="background: var(--bg-black); padding: 1rem; border-radius: 10px; text-align: center;">
+                        <span style="color: var(--text-light);">✅ nano banana</span>
+                        <br><span style="color: var(--primary-yellow); font-size: 0.9rem;">像个梗</span>
+                    </div>
+                </div>
+                <div style="background: rgba(255, 215, 0, 0.05); padding: 1rem; border-radius: 10px; border: 1px solid rgba(255, 215, 0, 0.2);">
+                    <p style="color: var(--primary-yellow); font-weight: 600; margin-bottom: 0.5rem;">
+                        为什么这很重要？
+                    </p>
+                    <p style="color: var(--text-light); margin-bottom: 0;">
+                        在 X 上：名字越怪，越容易被转发；越不像广告，越像"圈内发现"<br>
+                        👉 很多人是先看到名字 → 再去试 → 再吐槽或安利
+                    </p>
+                </div>
+            </div>
+
+            <!-- 原因2 -->
+            <div style="background: var(--bg-dark); padding: 2rem; border-radius: 15px; margin-bottom: 2rem; border-left: 4px solid var(--dark-yellow);">
+                <h4 style="color: var(--dark-yellow); margin-bottom: 1rem;">
+                    2️⃣ 在 X / Reddit 上形成"梗传播" 🧵
+                </h4>
+                <p style="margin-bottom: 1rem; color: var(--text-white);">
+                    nano banana 真正起飞，是因为这类内容：
+                </p>
+                <div style="background: var(--bg-black); padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;">
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li style="margin-bottom: 0.5rem; color: var(--primary-yellow);">🔸 "Why nano banana ignores my prompt 🍌"</li>
+                        <li style="margin-bottom: 0.5rem; color: var(--primary-yellow);">🔸 "nano banana cooked again"</li>
+                        <li style="margin-bottom: 0.5rem; color: var(--primary-yellow);">🔸 "Sometimes nano banana is god-tier, sometimes trash"</li>
+                    </ul>
+                </div>
+                <div style="background: rgba(255, 165, 0, 0.05); padding: 1rem; border-radius: 10px; border: 1px solid rgba(255, 165, 0, 0.2);">
+                    <p style="color: var(--dark-yellow); font-weight: 600; margin-bottom: 0.5rem;">
+                        📌 注意：
+                    </p>
+                    <p style="color: var(--text-light); margin-bottom: 0;">
+                        👉 吐槽 + 表情包 + 对比图 = X 的完美燃料<br>
+                        👉 哪怕是骂它，也在帮它传播
+                    </p>
+                </div>
+            </div>
+
+            <!-- 原因3 -->
+            <div style="background: var(--bg-dark); padding: 2rem; border-radius: 15px; margin-bottom: 2rem; border-left: 4px solid var(--primary-yellow);">
+                <h4 style="color: var(--primary-yellow); margin-bottom: 1rem;">
+                    3️⃣ 门槛极低：一句话就能出图 ⚡
+                </h4>
+                <p style="margin-bottom: 1rem; color: var(--text-white);">
+                    这是压倒很多模型的点。
+                </p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; color: var(--primary-yellow);">❌</div>
+                        <p style="color: var(--text-light); font-size: 0.9rem;">不用参数</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; color: var(--primary-yellow);">❌</div>
+                        <p style="color: var(--text-light); font-size: 0.9rem;">不用教程</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; color: var(--primary-yellow);">❌</div>
+                        <p style="color: var(--text-light); font-size: 0.9rem;">不用学提示词工程</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; color: var(--primary-yellow);">✅</div>
+                        <p style="color: var(--text-light); font-size: 0.9rem;">新人第一次用就能出结果</p>
+                    </div>
+                </div>
+                <p style="color: var(--primary-yellow); text-align: center; font-style: italic;">
+                    👉 极其适合"刷到就试"的社交平台用户
+                </p>
+                <p style="color: var(--text-light); text-align: center; margin-top: 0.5rem;">
+                    在 X 上：能让普通人 30 秒参与的东西，才会爆
+                </p>
+            </div>
+
+            <!-- 原因4 -->
+            <div style="background: var(--bg-dark); padding: 2rem; border-radius: 15px; margin-bottom: 2rem; border-left: 4px solid var(--dark-yellow);">
+                <h4 style="color: var(--dark-yellow); margin-bottom: 1rem;">
+                    4️⃣ 效果"忽好忽坏"，反而助推热度 🎢（反直觉）
+                </h4>
+                <p style="margin-bottom: 1rem; color: var(--text-white);">
+                    听起来很怪，但这是事实。
+                </p>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem;">
+                    <div style="background: var(--bg-black); padding: 1rem; border-radius: 10px; border: 1px solid rgba(255, 215, 0, 0.2);">
+                        <h5 style="color: var(--primary-yellow); margin-bottom: 0.5rem;">出神图 → 惊喜 → 发帖</h5>
+                        <p style="color: var(--text-light); font-size: 0.9rem;">用户分享惊艳作品，引起关注和讨论</p>
+                    </div>
+                    <div style="background: var(--bg-black); padding: 1rem; border-radius: 10px; border: 1px solid rgba(255, 165, 0, 0.2);">
+                        <h5 style="color: var(--dark-yellow); margin-bottom: 0.5rem;">出烂图 → 愤怒 → 发帖吐槽</h5>
+                        <p style="color: var(--text-light); font-size: 0.9rem;">用户抱怨翻车结果，同样产生讨论</p>
+                    </div>
+                </div>
+                <div style="background: rgba(255, 165, 0, 0.05); padding: 1rem; border-radius: 10px; border: 1px solid rgba(255, 165, 0, 0.2);">
+                    <p style="color: var(--dark-yellow); font-weight: 600; margin-bottom: 0.5rem;">
+                        📌 关键洞察：
+                    </p>
+                    <p style="color: var(--text-light); margin-bottom: 0;">
+                        两种情绪都会发帖<br>
+                        稳定反而不容易被讨论<br>
+                        👉 nano banana 的不稳定，制造了话题
+                    </p>
+                </div>
+            </div>
+
+            <!-- 原因5 -->
+            <div style="background: var(--bg-dark); padding: 2rem; border-radius: 15px; margin-bottom: 2rem; border-left: 4px solid var(--primary-yellow);">
+                <h4 style="color: var(--primary-yellow); margin-bottom: 1rem;">
+                    5️⃣ 刚好踩中了"AI 轻娱乐期" 🎭
+                </h4>
+                <p style="margin-bottom: 1rem; color: var(--text-white);">
+                    现在很多人：
+                </p>
+                <div style="background: var(--bg-black); padding: 1.5rem; border-radius: 10px;">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem;">
+                        <div>
+                            <h5 style="color: var(--text-light); margin-bottom: 1rem;">❌ 不想做的事：</h5>
+                            <ul style="list-style: none; padding-left: 0;">
+                                <li style="margin-bottom: 0.5rem; color: var(--text-light);">🔹 不想学 SD</li>
+                                <li style="margin-bottom: 0.5rem; color: var(--text-light);">🔹 不想调 MJ</li>
+                                <li style="margin-bottom: 0.5rem; color: var(--text-light);">🔹 不想看教程</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 style="color: var(--text-light); margin-bottom: 1rem;">✅ 只想做的事：</h5>
+                            <ul style="list-style: none; padding-left: 0;">
+                                <li style="margin-bottom: 0.5rem; color: var(--primary-yellow);">🔹 玩一玩</li>
+                                <li style="margin-bottom: 0.5rem; color: var(--primary-yellow);">🔹 发一张</li>
+                                <li style="margin-bottom: 0.5rem; color: var(--primary-yellow);">🔹 跟个趋势</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <p style="color: var(--primary-yellow); text-align: center; margin-top: 1rem;">
+                    nano banana 非常符合：轻度 AI + 快餐式生成 + 社交分享
+                </p>
+                <p style="color: var(--text-light); text-align: center; font-style: italic;">
+                    👉 它不是给"画师"，而是给"刷 X 的普通人"
+                </p>
+            </div>
+
+            <!-- 原因6 -->
+            <div style="background: var(--bg-dark); padding: 2rem; border-radius: 15px; margin-bottom: 2rem; border-left: 4px solid var(--dark-yellow);">
+                <h4 style="color: var(--dark-yellow); margin-bottom: 1rem;">
+                    6️⃣ 被大量"工具 / 平台 / 博主"二次包装 📦
+                </h4>
+                <p style="margin-bottom: 1rem; color: var(--text-white);">
+                    很多人并不是直接用模型，而是：
+                </p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <div style="background: var(--bg-black); padding: 1rem; border-radius: 10px; text-align: center;">
+                        <span style="color: var(--primary-yellow);">🌐</span>
+                        <p style="color: var(--text-light); margin: 0.5rem 0;">某个 AI 网站</p>
+                    </div>
+                    <div style="background: var(--bg-black); padding: 1rem; border-radius: 10px; text-align: center;">
+                        <span style="color: var(--primary-yellow);">🔧</span>
+                        <p style="color: var(--text-light); margin: 0.5rem 0;">某个插件</p>
+                    </div>
+                    <div style="background: var(--bg-black); padding: 1rem; border-radius: 10px; text-align: center;">
+                        <span style="color: var(--primary-yellow);">📺</span>
+                        <p style="color: var(--text-light); margin: 0.5rem 0;">某个博主说"这个超火"</p>
+                    </div>
+                </div>
+                <div style="background: rgba(255, 165, 0, 0.05); padding: 1rem; border-radius: 10px; border: 1px solid rgba(255, 165, 0, 0.2);">
+                    <p style="color: var(--dark-yellow); font-weight: 600; margin-bottom: 0.5rem;">
+                        二次传播者的需求：
+                    </p>
+                    <p style="color: var(--text-light); margin-bottom: 0;">
+                        需要一个好讲的概念<br>
+                        nano banana 正好是<br>
+                        👉 它成了一个"标签"，而不只是模型
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 现实提醒 -->
+        <div class="animate-on-scroll" style="background: rgba(255, 215, 0, 0.05); padding: 2rem; border-radius: 15px; border: 1px solid rgba(255, 215, 0, 0.2); margin-top: 3rem;">
+            <h3 style="color: var(--primary-yellow); margin-bottom: 1rem; text-align: center;">
+                ⚠️ 一个现实提醒
+            </h3>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; margin-bottom: 1rem;">
+                <div style="text-align: center;">
+                    <div style="font-size: 2rem; color: var(--dark-yellow); margin-bottom: 0.5rem;">🔥</div>
+                    <p style="color: var(--text-white); font-weight: 600;">火 ≠ 强 ≠ 稳定 ≠ 专业</p>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 2rem; color: var(--primary-yellow); margin-bottom: 0.5rem;">📊</div>
+                    <p style="color: var(--text-white); font-weight: 600;">真实情况</p>
+                </div>
+            </div>
+            <p style="color: var(--text-light); margin-bottom: 1rem;">
+                玩的人很多<br>
+                吐槽的人也很多<br>
+                真正长期用于专业生产的比例不高
+            </p>
+            <p style="color: var(--primary-yellow); text-align: center; font-weight: 600;">
+                👉 它是：现象级流行模型<br>
+                👉 而不是：生产力天花板
+            </p>
+        </div>
+
+        <!-- 一句话总结 -->
+        <div class="animate-on-scroll" style="background: var(--bg-dark); padding: 2rem; border-radius: 15px; margin-top: 3rem; text-align: center;">
+            <h3 style="color: var(--primary-yellow); margin-bottom: 1rem;">
+                💬 一句话总结它为什么火
+            </h3>
+            <p style="color: var(--text-white); font-size: 1.1rem; line-height: 1.8;">
+                nano banana 火，是因为它：<br>
+                🍌 <strong>名字有梗</strong><br>
+                🤖 <strong>上手无脑</strong><br>
+                🎢 <strong>效果有惊喜也有槽点</strong><br>
+                📱 <strong>非常适合在 X 上传播</strong>
+            </p>
+        </div>
+    </section>
+
+    <!-- 对比分析 -->
+    <section id="comparison" class="section">
+        <h2 class="section-title">详细对比分析</h2>
+
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>维度</th>
+                    <th>nano banana类</th>
+                    <th>Midjourney</th>
+                    <th>Stable Diffusion</th>
+                    <th>DALL·E 3</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>上手难度</td>
+                    <td class="highlight">⭐ 极简</td>
+                    <td>⭐⭐⭐⭐ 复杂</td>
+                    <td>⭐⭐⭐⭐⭐ 专家级</td>
+                    <td>⭐⭐ 中等</td>
+                </tr>
+                <tr>
+                    <td>生成速度</td>
+                    <td class="highlight">⭐⭐⭐⭐⭐ 秒级</td>
+                    <td>⭐⭐⭐ 分钟级</td>
+                    <td>⭐⭐⭐⭐ 秒级（需GPU）</td>
+                    <td>⭐⭐⭐ 秒级</td>
+                </tr>
+                <tr>
+                    <td>输出质量</td>
+                    <td>⭐⭐⭐ 商用级</td>
+                    <td class="highlight">⭐⭐⭐⭐⭐ 艺术级</td>
+                    <td class="highlight">⭐⭐⭐⭐⭐ 可定制</td>
+                    <td>⭐⭐⭐⭐ 优秀</td>
+                </tr>
+                <tr>
+                    <td>成本控制</td>
+                    <td class="highlight">⭐⭐⭐⭐⭐ 极低</td>
+                    <td>⭐⭐⭐ 中等</td>
+                    <td class="highlight">⭐⭐⭐⭐⭐ 低（自部署）</td>
+                    <td>⭐⭐ 较高</td>
+                </tr>
+                <tr>
+                    <td>商用友好</td>
+                    <td class="highlight">⭐⭐⭐⭐⭐ 极佳</td>
+                    <td>⭐⭐ 较差</td>
+                    <td>⭐⭐⭐⭐ 良好</td>
+                    <td>⭐⭐⭐ 一般</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="stats">
+            <div class="stat-item animate-on-scroll">
+                <div class="stat-number">50万+</div>
+                <div class="stat-label">活跃用户选择</div>
+            </div>
+            <div class="stat-item animate-on-scroll">
+                <div class="stat-number">2000万+</div>
+                <div class="stat-label">图片成功生成</div>
+            </div>
+            <div class="stat-item animate-on-scroll">
+                <div class="stat-number">5秒</div>
+                <div class="stat-label">平均生成速度</div>
+            </div>
+            <div class="stat-item animate-on-scroll">
+                <div class="stat-number">95%</div>
+                <div class="stat-label">用户满意度</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 真实用户评价 -->
+    <section id="testimonials" class="section" style="background: var(--bg-dark);">
+        <h2 class="section-title">来自真实用户（X/Reddit/社区）的评价</h2>
+        <p style="text-align: center; color: var(--text-light); margin-bottom: 3rem;">
+            包括优点、缺点和吐槽（注意：这些都是用户真实反馈，不是官方宣传内容）
+        </p>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('positive')">🟢 正面评价</button>
+            <button class="tab" onclick="switchTab('negative')">🔴 负面评价</button>
+            <button class="tab" onclick="switchTab('summary')">📊 评价总结</button>
+        </div>
+
+        <div id="positive" class="tab-content active">
+            <h3 style="color: var(--primary-yellow); margin-bottom: 2rem; text-align: center;">
+                用户认为不错的地方
+            </h3>
+            <div class="testimonials">
+                <div class="testimonial-card animate-on-scroll">
+                    <div class="quote">
+                        <strong>✨ 生成效果在某些场景挺好</strong><br>
+                        有人说某些时候生成的图像很棒，甚至接近 9/10 的效果。生成脸部细节时有时表现非常好。
+                        <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--primary-yellow);">
+                            — Reddit 用户讨论
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card animate-on-scroll">
+                    <div class="quote">
+                        <strong>📈 在社交媒体上很火</strong><br>
+                        Nano Banana 的图像/提示词趋势，也就是 nano banana 的使用案例在 X、TikTok 等平台很流行，很多用户上传自己的生成内容。
+                        <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--primary-yellow);">
+                            — 社区趋势观察
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card animate-on-scroll">
+                    <div class="quote">
+                        <strong>⚡ 对简单使用者足够</strong><br>
+                        对于简单的图像创作或轻量级使用（比如将自拍变成 3D 小物之类的趋势图像），许多人觉得足够玩。
+                        <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--primary-yellow);">
+                            — 普通用户体验反馈
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card animate-on-scroll">
+                    <div class="quote">
+                        <strong>🎯 基础生成 + 整体编辑/合成方面有潜力</strong><br>
+                        用户发现在基础生成和整体编辑方面展现出不错的潜力，特别是对新手友好。
+                        <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--primary-yellow);">
+                            — 社区技术用户评价
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card animate-on-scroll">
+                    <div class="quote">
+                        <strong>🌟 趋势很火，参与门槛低</strong><br>
+                        作为一个现象级趋势，很多人乐于参与其中，特别是对于想要快速体验AI绘图的新手来说是个好入口。
+                        <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--primary-yellow);">
+                            — 新用户体验分享
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="negative" class="tab-content">
+            <h3 style="color: var(--dark-yellow); margin-bottom: 2rem; text-align: center;">
+                最多用户吐槽的地方
+            </h3>
+            <div class="testimonials">
+                <div class="testimonial-card animate-on-scroll" style="border-left-color: var(--dark-yellow);">
+                    <div class="quote">
+                        <strong>❌ 输出质量不稳定</strong><br>
+                        有时候效果很好，但其他时候结果非常差，甚至和提示词无关。用户说"一会儿是 9/10，好像理解我；一会儿 2/10，完全乱来"。
+                        <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--dark-yellow);">
+                            — Reddit 用户 +6
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card animate-on-scroll" style="border-left-color: var(--dark-yellow);">
+                    <div class="quote">
+                        <strong>❌ 有时根本不按提示做</strong><br>
+                        很多人吐槽模型不改图、忽略多项编辑指令、反复输出同一个图像。这种情况让用户很困扰。
+                        <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--dark-yellow);">
+                            — Reddit 用户 +1
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card animate-on-scroll" style="border-left-color: var(--dark-yellow);">
+                    <div class="quote">
+                        <strong>❌ 图像质量/分辨率问题</strong><br>
+                        有用户指出：
+                        <ul style="list-style: none; padding-left: 0; margin-top: 0.5rem;">
+                            <li>🔹 把原图降低质量、分辨率变小</li>
+                            <li>🔹 图像合成看起来像"复制粘贴"</li>
+                            <li>🔹 结果质量不如其他一些模型</li>
+                        </ul>
+                        <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--dark-yellow);">
+                            — Reddit 用户 +1
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card animate-on-scroll" style="border-left-color: var(--dark-yellow);">
+                    <div class="quote">
+                        <strong>❌ 功能/表现差异大</strong><br>
+                        同一个模型、同一个提示，有时候表现不一样，有人评论"前几周效果还行，现在变得更烂了"。
+                        <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--dark-yellow);">
+                            — Reddit 用户反馈
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card animate-on-scroll" style="border-left-color: var(--dark-yellow);">
+                    <div class="quote">
+                        <strong>❌ 社区上还有诈骗困扰</strong><br>
+                        有 Reddit 用户指出存在网站打着 nano banana 名号推销付费服务可能是诈骗，说"很多网站都不是官方的，原模型其实并没有真正的网站"。
+                        <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--dark-yellow);">
+                            — Reddit 用户警告
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card animate-on-scroll" style="border-left-color: var(--dark-yellow);">
+                    <div class="quote">
+                        <strong>❌ 对复杂图像编辑 /风格迁移等高级任务支持很弱</strong><br>
+                        部分用户认为虽然对简单任务足够，但对复杂的图像编辑需求支持不足，不太适合专业级创作。
+                        <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--dark-yellow);">
+                            — 专业用户评价
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card animate-on-scroll" style="border-left-color: var(--dark-yellow);">
+                    <div class="quote">
+                        <strong>❌ 商业可靠性差（需警惕非官方站点）</strong><br>
+                        市场上的 nano banana 服务差异很大，很多非官方站点可能存在风险，需要谨慎选择。
+                        <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--dark-yellow);">
+                            — 社区安全提醒
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="summary" class="tab-content">
+            <h3 style="color: var(--primary-yellow); margin-bottom: 2rem; text-align: center;">
+                社区用户总结的常见观点 & 简短归纳（真实用户普遍感受）
+            </h3>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                <div class="animate-on-scroll" style="background: var(--bg-dark); padding: 2rem; border-radius: 15px; border-top: 3px solid var(--primary-yellow);">
+                    <h4 style="color: var(--primary-yellow); margin-bottom: 1rem;">易用性</h4>
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">👍</div>
+                    <p>绝大多数人认为易用</p>
+                    <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">
+                        无需学习复杂参数，新手友好，一键生成
+                    </p>
+                </div>
+
+                <div class="animate-on-scroll" style="background: var(--bg-dark); padding: 2rem; border-radius: 15px; border-top: 3px solid var(--dark-yellow);">
+                    <h4 style="color: var(--dark-yellow); margin-bottom: 1rem;">稳定性</h4>
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚠️</div>
+                    <p>很不稳定</p>
+                    <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">
+                        输出质量波动大，有时完全不理解提示
+                    </p>
+                </div>
+
+                <div class="animate-on-scroll" style="background: var(--bg-dark); padding: 2rem; border-radius: 15px; border-top: 3px solid var(--primary-yellow);">
+                    <h4 style="color: var(--primary-yellow); margin-bottom: 1rem;">质量</h4>
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">⭐⭐⭐</div>
+                    <p>适合轻量任务，不适合专业级</p>
+                    <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">
+                        基础够用，但不追求极致质量
+                    </p>
+                </div>
+
+                <div class="animate-on-scroll" style="background: var(--bg-dark); padding: 2rem; border-radius: 15px; border-top: 3px solid var(--dark-yellow);">
+                    <h4 style="color: var(--dark-yellow); margin-bottom: 1rem;">高级编辑</h4>
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">😕</div>
+                    <p>不太靠谱</p>
+                    <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">
+                        复杂编辑支持弱，不适合精细控制
+                    </p>
+                </div>
+
+                <div class="animate-on-scroll" style="background: var(--bg-dark); padding: 2rem; border-radius: 15px; border-top: 3px solid var(--dark-yellow);">
+                    <h4 style="color: var(--dark-yellow); margin-bottom: 1rem;">商业可靠性</h4>
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚠️</div>
+                    <p>差异大（需警惕非官方站点）</p>
+                    <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">
+                        平台选择要谨慎，避免诈骗风险
+                    </p>
+                </div>
+            </div>
+
+            <div style="margin-top: 3rem; padding: 2rem; background: rgba(255, 215, 0, 0.05); border-radius: 15px; border: 1px solid rgba(255, 215, 0, 0.2);">
+                <p style="color: var(--primary-yellow); font-weight: 600; margin-bottom: 1rem;">
+                    💡 社区共识总结：
+                </p>
+                <ul style="list-style: none; padding-left: 0;">
+                    <li style="margin-bottom: 0.5rem;">🔹 有用户觉得在基础生成 + 整体编辑/合成方面有潜力</li>
+                    <li style="margin-bottom: 0.5rem;">🔹 但同时也有人觉得"对复杂图像编辑 /风格迁移等高级任务支持很弱"</li>
+                    <li style="margin-bottom: 0.5rem;">🔹 趋势很火，但很多体验反馈是波动的</li>
+                    <li style="margin-bottom: 0.5rem;">🔹 部分人把它当成"玩具"，不是高质量专业工具</li>
+                </ul>
+                <p style="margin-top: 1rem; color: var(--text-light); font-size: 0.9rem;">
+                    这些观点很多来自 Reddit / X / 社区讨论，不是商业广告—所以能更真实反映用户体验。
+                </p>
+            </div>
+        </div>
+    </section>
+
+    
+    <!-- 使用指南 -->
+    <section class="section">
+        <h2 class="section-title">三种主流使用方式</h2>
+
+        <div class="steps">
+            <div class="step-card animate-on-scroll">
+                <div class="step-number">1</div>
+                <h3>在线工具平台</h3>
+                <p>新手首选，注册即用，无需技术背景。选择可靠平台，享受稳定服务。</p>
+                <div style="margin-top: 1rem;">
+                    <span class="badge">推荐</span>
+                </div>
+            </div>
+
+            <div class="step-card animate-on-scroll">
+                <div class="step-number">2</div>
+                <h3>浏览器插件</h3>
+                <p>Chrome生态丰富，右键即可生成，一键插入文章，适合内容创作者。</p>
+                <div style="margin-top: 1rem;">
+                    <span class="badge">便捷</span>
+                </div>
+            </div>
+
+            <div class="step-card animate-on-scroll">
+                <div class="step-number">3</div>
+                <h3>API集成</h3>
+                <p>开发者选项，可深度定制，支持自动化工作流，适合企业级应用。</p>
+                <div style="margin-top: 1rem;">
+                    <span class="badge">专业</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="code-block animate-on-scroll" style="margin-top: 3rem;">
+            <pre># Python API 调用示例
+import requests
+
+API_URL = "https://api.example.com/generate"
+API_KEY = "your_api_key"
+
+def generate_image(prompt):
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "prompt": prompt,
+        "style": "realistic",
+        "size": "1024x1024"
+    }
+    response = requests.post(API_URL, headers=headers, json=data)
+    return response.json()
+
+# 使用示例
+result = generate_image("a modern office with natural light")</pre>
+        </div>
+    </section>
+
+    <!-- 价格方案 -->
+    <section id="pricing" class="section" style="background: var(--bg-dark);">
+        <h2 class="section-title">选择适合您的方案</h2>
+
+        <div class="pricing">
+            <div class="pricing-card animate-on-scroll">
+                <div class="plan-name">体验套餐</div>
+                <div class="plan-price">免费</div>
+                <ul class="plan-features">
+                    <li>20次免费生成机会</li>
+                    <li>基础风格和尺寸</li>
+                    <li>基础客服支持</li>
+                    <li>新手引导教程</li>
+                </ul>
+                <button class="btn btn-secondary" style="width: 100%;">立即开始</button>
+            </div>
+
+            <div class="pricing-card featured animate-on-scroll">
+                <div class="plan-name">入门套餐</div>
+                <div class="plan-price">¥99<span>/月</span></div>
+                <ul class="plan-features">
+                    <li>500次生成额度</li>
+                    <li>全部风格选择</li>
+                    <li>多尺寸支持</li>
+                    <li>优先处理队列</li>
+                    <li>7×8小时客服</li>
+                </ul>
+                <button class="btn btn-primary" style="width: 100%;">立即购买</button>
+            </div>
+
+            <div class="pricing-card animate-on-scroll">
+                <div class="plan-name">专业套餐</div>
+                <div class="plan-price">¥299<span>/月</span></div>
+                <ul class="plan-features">
+                    <li>无限生成额度</li>
+                    <li>高级功能解锁</li>
+                    <li>API接口支持</li>
+                    <li>专属客户经理</li>
+                    <li>数据分析报告</li>
+                </ul>
+                <button class="btn btn-secondary" style="width: 100%;">联系销售</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="section">
+        <h2 class="section-title">🍌 Nano Banana 常见 FAQs</h2>
+        <p style="text-align: center; color: var(--text-light); margin-bottom: 3rem;">
+            从 X / Reddit / 中文社区里反复出现的问题，用人话版回答，小白也能直接看懂
+        </p>
+
+        <!-- 基础认知问题 -->
+        <h3 style="color: var(--primary-yellow); margin-bottom: 1.5rem;">📝 基础认知问题</h3>
+        <div class="faq-container">
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>1️⃣ nano banana 是官方模型吗？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>❌ 不是。</strong></p>
+                    <p>没有任何官方发布叫 "nano banana"</p>
+                    <p>它是 社区昵称 / 黑话</p>
+                    <p>多半指：某类「小模型、快模型、便宜模型」</p>
+                    <p>常被集成在网站、插件、AI 工具里</p>
+                    <p><strong>👉 你用的是平台，不是"nano banana 本体"</strong></p>
+                </div>
+            </div>
+
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>2️⃣ 为什么有时候画得很好，有时候很垃圾？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>这是它最常被吐槽的一点。</p>
+                    <p>原因通常有 3 个：</p>
+                    <p>🔄 <strong>后台模型版本在轮换</strong></p>
+                    <p>⚖️ <strong>平台在做成本控制</strong>（降分辨率 / 降采样）</p>
+                    <p>🧠 <strong>模型偏"泛化"，不追求极致风格</strong></p>
+                    <p><strong>📌 所以你会看到很多评价是：</strong></p>
+                    <p>"上一张封神，下一张像抽奖"</p>
+                </div>
+            </div>
+
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>3️⃣ 它和 Midjourney / Stable Diffusion 谁更强？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>结论先给你：<strong>定位完全不同。</strong></p>
+                    <table style="width: 100%; margin-top: 1rem;">
+                        <tr>
+                            <td style="padding: 0.5rem;"><strong>你想要什么</strong></td>
+                            <td style="padding: 0.5rem;"><strong>选谁</strong></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.5rem;">快速出图</td>
+                            <td style="padding: 0.5rem; color: var(--primary-yellow);">nano banana</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.5rem;">艺术感 / 插画</td>
+                            <td style="padding: 0.5rem;">Midjourney</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.5rem;">高度可控 / 本地</td>
+                            <td style="padding: 0.5rem;">Stable Diffusion</td>
+                        </tr>
+                    </table>
+                    <p><strong>👉 nano banana 不是用来 PK 艺术性的</strong></p>
+                </div>
+            </div>
+
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>4️⃣ 为什么很多网站都说自己是 nano banana？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>⚠️ 这里是重灾区</strong></p>
+                    <p>nano banana 不是品牌</p>
+                    <p>谁都能用这个词</p>
+                    <p>所以：</p>
+                    <p>✅ 有靠谱平台</p>
+                    <p>❌ 也有割韭菜的</p>
+                    <p>❌ 甚至有诈骗站</p>
+                    <p><strong>📌 判断原则：</strong></p>
+                    <p>✅ 是否清楚写明版权/商用</p>
+                    <p>✅ 是否能查到公司/产品背景</p>
+                    <p>❌ 是否强行诱导付费</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 技术使用问题 -->
+        <h3 style="color: var(--primary-yellow); margin: 3rem 0 1.5rem;">⚙️ 技术使用问题</h3>
+        <div class="faq-container">
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>5️⃣ 哪些提示词对 nano banana 特别有效？哪些无效？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>nano banana 对文字提示理解较宽容，适合自然语言描述场景与动作；</p>
+                    <p><strong>✅ 有效提示：</strong>清晰描述主体、动作、场景、风格</p>
+                    <p><strong>❌ 无效提示：</strong>过度技术性、细节参数、非自然语言描述</p>
+                    <p>总体来说，它的设计是"低门槛、自然语言友好"。</p>
+                    <p><strong>总结：</strong>描述越自然、语义越明确，效果越好。</p>
+                    <p>官方示例趋势甚至只需一句话即可生成 3D diorama 风格图。</p>
+                </div>
+            </div>
+
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>6️⃣ 为什么提示词不用写很复杂？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>这是设计取向问题：</p>
+                    <p>nano banana 偏：</p>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li>🔹 自动理解</li>
+                        <li>🔹 通用描述</li>
+                    </ul>
+                    <p>不像 SD / MJ 那样吃参数</p>
+                    <p><strong>📌 结果就是：</strong></p>
+                    <p>✅ 新手很友好</p>
+                    <p>❌ 老玩家觉得"不够可控"</p>
+                </div>
+            </div>
+
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>7️⃣ 为什么新手觉得好用，老玩家觉得难用？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>新手喜欢：</strong>容易上手；只需简单语言就能出图。</p>
+                    <p><strong>老玩家追求：</strong>可控性 & 细节调参，在这方面 Nano Banana 不如 SD 或 MJ，所以有用户觉得它"不够专业"。</p>
+                </div>
+            </div>
+
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>8️⃣ 如何提高稳定性，避免"抽卡式出图"？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>建议方法：</strong></p>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li>🔹 避免过于抽象的提示词</li>
+                        <li>🔹 常用范例/模板</li>
+                        <li>🔹 必要时在 Gemini 等平台指定更明确模型版本</li>
+                        <li>🔹 根据历史输出迭代提示</li>
+                    </ul>
+                    <p>这是使用经验总结（社区常见技巧）。</p>
+                </div>
+            </div>
+
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>9️⃣ 生成的图片分辨率和质量如何？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>标准输出：</strong>通常 1024x1024 像素，支持多种常见比例（如16:9、4:3、1:1）。</p>
+                    <p><strong>质量特点：</strong>商用友好，但不是艺术级别。</p>
+                    <p><strong>稳定性：</strong>同一提示词重复生成变化不大。</p>
+                    <p>付费用户可以生成更高分辨率的图片。</p>
+                </div>
+            </div>
+
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>🔟 生成一张图片需要多长时间？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>通常情况下，单张图片生成时间为<strong>3-10秒</strong>，具体取决于：</p>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li>🔹 图片复杂度和当前服务器负载</li>
+                        <li>🔹 批量生成时会并行处理，节省您的等待时间</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 商用授权问题 -->
+        <h3 style="color: var(--primary-yellow); margin: 3rem 0 1.5rem;">💼 商用授权问题</h3>
+        <div class="faq-container">
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>1️⃣1️⃣ 用 nano banana 生成的图能商用吗？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>关键点：看平台，不看名字。</strong></p>
+                    <p>模型 ≠ 授权</p>
+                    <p>是否商用：</p>
+                    <p>✅ 取决于你用的工具</p>
+                    <p>✅ 取决于它的 ToS（服务条款）</p>
+                    <p><strong>👉 不要只信"可商用"四个字</strong></p>
+                </div>
+            </div>
+
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>1️⃣2️⃣ 为什么它特别适合网站 / SEO？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>因为它：</p>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li>🔹 出图快</li>
+                        <li>🔹 风格稳</li>
+                        <li>🔹 不夸张</li>
+                        <li>🔹 成本低</li>
+                        <li>🔹 适合批量</li>
+                    </ul>
+                    <p><strong>📌 对 Google 来说：</strong></p>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li>🔹 图清晰</li>
+                        <li>🔹 风格统一</li>
+                        <li>🔹 不违规</li>
+                    </ul>
+                    <p>就够了</p>
+                    <p><strong>👉 SEO 不需要艺术品</strong></p>
+                </div>
+            </div>
+
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>1️⃣3️⃣ 用 Nano Banana 生成的图片能不能过 Google AdSense？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>理论上可以</strong>，只要图片不违反版权/审查规则并且具有合法使用授权。</p>
+                    <p>实际审核还是取决于具体内容与站点政策。</p>
+                </div>
+            </div>
+
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>1️⃣4️⃣ SEO 站点大规模用 Nano Banana 会不会被判低质内容？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>SEO 主要看内容质量，而非工具来源。</strong></p>
+                    <p>如果图片：</p>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li>✅ 能辅助提升页面体验</li>
+                        <li>✅ 与文本内容相关</li>
+                    </ul>
+                    <p>一般不会被降权。</p>
+                    <p>但如果只是"无意义生成图"，且跟文本无关，那有可能被认定为低质内容。</p>
+                    <p>这个属于 SEO 行业实践。</p>
+                </div>
+            </div>
+
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>1️⃣5️⃣ 和人工图库（Shutterstock/Adobe Stock）相比风险在哪？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>📌 AI 图像风险：</strong></p>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li>🔹 版权归属不明确</li>
+                        <li>🔹 可能含训练来源问题</li>
+                    </ul>
+                    <p><strong>📌 商业图库：</strong></p>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li>🔹 版权更明确</li>
+                    </ul>
+                    <p><strong>所以风险管理上人工图库更稳妥，AI 图像更灵活但需谨慎授权/条款确认。</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 平台选择问题 -->
+        <h3 style="color: var(--primary-yellow); margin: 3rem 0 1.5rem;">🛠️ 平台选择问题</h3>
+        <div class="faq-container">
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>1️⃣6️⃣ 市面上哪些"Nano Banana 网站/工具"是靠谱的？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>最靠谱的选择：</strong></p>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li>🔹 Google 官方 Gemini/Ai Studio 内的 Nano Banana 图像编辑生成功能（最权威）</li>
+                        <li>🔹 一些集成 Nano Banana 模型的第三方 AI 工具（需核实出处）</li>
+                    </ul>
+                    <p>⚠️ <strong>要注意有些站点声称"Nano Banana"，但可能只是借名吸引用户。</strong></p>
+                </div>
+            </div>
+
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>1️⃣7️⃣ 怎么快速判断一个 Nano Banana 平台是不是割韭菜？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>看以下几点：</strong></p>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li>🔹 是否清楚写明模型来源（官方名称/Gemini）</li>
+                        <li>🔹 是否明确商业授权</li>
+                        <li>🔹 是否过度营销"爆火""神级效果"</li>
+                        <li>🔹 是否有隐藏付费陷阱或支付即不能退</li>
+                    </ul>
+                    <p>用户常用这些判断逻辑（社群讨论总结）。</p>
+                </div>
+            </div>
+
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>1️⃣8️⃣ 为什么很多站点不写模型来源？是不是有风险？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>很多第三方工具为了吸引用户，会模糊模型出处甚至夸大效果。</p>
+                    <p><strong>如果没有写清楚模型来源与授权条款，就可能是没有官方支持的产品，存在风险。</strong></p>
+                </div>
+            </div>
+
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>1️⃣9️⃣ 用 Nano Banana 会不会有隐私/数据风险？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>只要是在线服务，就有潜在隐私性风险</strong>（上传图像后可能被处理/使用）。</p>
+                    <p>选择官方或有明确隐私政策的平台可以减少风险。</p>
+                    <p><strong>常见社区建议：</strong>不要上传敏感个人信息图像。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 趋势发展问题 -->
+        <h3 style="color: var(--primary-yellow); margin: 3rem 0 1.5rem;">🔮 趋势发展问题</h3>
+        <div class="faq-container">
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>2️⃣0️⃣ Nano Banana 是短期热梗，还是长期形态？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>大概率会：</strong></p>
+                    <p>🔥 <strong>作为"梗"</strong> → 会退热</p>
+                    <p>✅ <strong>作为"工具形态"</strong> → 会长期存在</p>
+                    <p><strong>👉 名字可能消失</strong></p>
+                    <p><strong>👉 但这种"快+便宜+稳"的模型不会消失</strong></p>
+                </div>
+            </div>
+
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>2️⃣1️⃣ 为什么最近感觉"没以前好用了"？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>这是 X 上的高频问题👇</p>
+                    <p><strong>可能原因：</strong></p>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li>🔹 平台降本</li>
+                        <li>🔹 用户暴增</li>
+                        <li>🔹 模型换代</li>
+                        <li>🔹 内容审核变严</li>
+                    </ul>
+                    <p><strong>📌 这在 AI 工具里很常见</strong></p>
+                    <p>不是你一个人的感觉</p>
+                </div>
+            </div>
+
+            <div class="faq-item animate-on-scroll">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>2️⃣2️⃣ 未来是否会被更强的同类模型替代？</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>技术更新非常快，肯定会被更强的模型</strong>（如 GPT‑Image 1.5、后续 Gemini 版本等）<strong>迭代替代</strong>。</p>
+                    <p>热门新品推出是常态。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 联系表单 -->
+    <section id="contact" class="section" style="background: var(--bg-dark);">
+        <h2 class="section-title">联系我们</h2>
+
+        <form class="contact-form animate-on-scroll" onsubmit="handleSubmit(event)">
+            <div class="form-group">
+                <label for="name">您的姓名</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">电子邮箱</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="message">留言内容</label>
+                <textarea id="message" name="message" rows="5" required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                <i class="fas fa-paper-plane"></i>
+                发送消息
+            </button>
+        </form>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>产品</h4>
+                <ul>
+                    <li><a href="#">nano banana 功能介绍</a></li>
+                    <li><a href="#">价格方案</a></li>
+                    <li><a href="#">API文档</a></li>
+                    <li><a href="#">更新日志</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>资源</h4>
+                <ul>
+                    <li><a href="#">nano banana 使用教程</a></li>
+                    <li><a href="#">提示词指南</a></li>
+                    <li><a href="#">最佳实践</a></li>
+                    <li><a href="#">案例研究</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>公司</h4>
+                <ul>
+                    <li><a href="#">关于我们</a></li>
+                    <li><a href="#">博客 - nano banana 资讯</a></li>
+                    <li><a href="#">加入我们</a></li>
+                    <li><a href="#">联系方式</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>关注我们</h4>
+                <p style="color: var(--text-light); margin-bottom: 1rem;">获取 nano banana 最新资讯和优惠信息</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-github"></i></a>
+                    <a href="#"><i class="fab fa-discord"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 Nano Banana Platform. 致力于为用户提供最优质的AI图像生成服务。</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-light);">
+                ⚠️ 重要声明：nano banana是AI社区对某种类型模型的通俗称呼，并非任何公司的官方产品名称。<br>
+                nano banana 是一个社区术语，代表了"快、便宜、稳定"的图片生成模型类型。
+            </p>
+        </div>
+    </footer>
+
+    <!-- 通知组件 -->
+    <div id="notification" class="notification">
+        <span id="notification-text"></span>
+    </div>
+
+    <!-- 页面元信息 -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Nano Banana - nano banana AI圈火爆的'又小又快'图片生成模型",
+        "description": "nano banana 是AI圈对'又小又快'图片生成模型的称呼。了解为什么nano banana火爆全网，如何使用nano banana，以及nano banana的真实评价和FAQ。",
+        "url": "https://nanobanana.com",
+        "mainEntity": {
+            "@type": "SoftwareApplication",
+            "name": "Nano Banana",
+            "alternateName": "nano banana",
+            "applicationCategory": "DesignApplication",
+            "operatingSystem": "Web Browser",
+            "description": "nano banana - AI图片生成模型，快速、便宜、稳定，适合网站配图、SEO优化和内容创作"
+        }
+    }
+    </script>
+
+    <script>
+  
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 滚动动画
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationDelay = '0.2s';
+                    entry.target.classList.add('animate-on-scroll');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
+        });
+
+        // FAQ切换
+        function toggleFAQ(element) {
+            const answer = element.nextElementSibling;
+            const allQuestions = document.querySelectorAll('.faq-question');
+            const allAnswers = document.querySelectorAll('.faq-answer');
+
+            // 关闭其他FAQ
+            allQuestions.forEach(q => {
+                if (q !== element) {
+                    q.classList.remove('active');
+                }
+            });
+
+            allAnswers.forEach(a => {
+                if (a !== answer) {
+                    a.classList.remove('active');
+                }
+            });
+
+            // 切换当前FAQ
+            element.classList.toggle('active');
+            answer.classList.toggle('active');
+        }
+
+        // 选项卡切换
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.textContent.includes(tabName === 'positive' ? '正面' : '负面')) {
+                    tab.classList.add('active');
+                }
+            });
+
+            contents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // 表单提交
+        function handleSubmit(event) {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData);
+
+            // 显示通知
+            showNotification('消息已发送！我们会尽快回复您。');
+
+            // 重置表单
+            event.target.reset();
+        }
+
+        // 显示通知
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notification-text');
+
+            notificationText.textContent = message;
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // 页面加载完成
+        window.addEventListener('load', function() {
+            // 显示欢迎通知
+            setTimeout(() => {
+                showNotification('🍌 欢迎来到 Nano Banana！');
+            }, 1000);
+
+            // 初始化进度条动画
+            const progressBars = document.querySelectorAll('.progress-fill');
+            progressBars.forEach(bar => {
+                setTimeout(() => {
+                    bar.style.width = bar.getAttribute('data-progress') || '80%';
+                }, 500);
+            });
+        });
+
+        // 防止表单重复提交
+        let isSubmitting = false;
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (isSubmitting) {
+                    e.preventDefault();
+                    return false;
+                }
+                isSubmitting = true;
+                setTimeout(() => {
+                    isSubmitting = false;
+                }, 3000);
+            });
+        });
+    </script>
+</body>
+</html>
