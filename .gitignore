@@ -1,0 +1,11 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# IDE
+.claude/
+
+# Temporary files
+nul
