@@ -4,11 +4,45 @@ const path = require('path');
 // 配置
 const config = {
     baseUrl: 'https://nemotron3nano.com',
-    htmlFiles: ['index.html', 'nano-banana-landing-page.html'],
+    extensions: ['.html', '.htm'], // 要扫描的文件扩展名
+    excludeDirs: ['node_modules', '.git', '.claude'], // 排除的目录
+    excludeFiles: ['server.js', 'generate-sitemap.js', 'package-lock.json'], // 排除的文件
     output: 'sitemap.xml',
     changefreq: 'weekly',
     priority: '1.0'
 };
+
+// 递归扫描目录获取所有 HTML 文件
+function scanDirectory(dir, fileList = []) {
+    const files = fs.readdirSync(dir);
+
+    files.forEach(file => {
+        const filePath = path.join(dir, file);
+        const stat = fs.statSync(filePath);
+        const relativePath = path.relative(__dirname, filePath).replace(/\\/g, '/');
+
+        // 跳过排除的目录
+        if (config.excludeDirs.some(excluded => relativePath.includes(excluded))) {
+            return;
+        }
+
+        // 跳过排除的文件
+        if (config.excludeFiles.some(excluded => relativePath.endsWith(excluded))) {
+            return;
+        }
+
+        if (stat.isDirectory()) {
+            scanDirectory(filePath, fileList);
+        } else if (stat.isFile()) {
+            const ext = path.extname(file);
+            if (config.extensions.includes(ext)) {
+                fileList.push(relativePath);
+            }
+        }
+    });
+
+    return fileList;
+}
 
 // 从 HTML 文件中提取锚点链接
 function extractAnchors(htmlContent) {
@@ -66,8 +100,11 @@ function generateSitemap() {
         priority: '1.0'
     });
 
-    // 扫描 HTML 文件
-    config.htmlFiles.forEach(file => {
+    // 自动扫描所有 HTML 文件
+    const htmlFiles = scanDirectory(__dirname);
+    console.log(`🔍 扫描到 ${htmlFiles.length} 个 HTML 文件\n`);
+
+    htmlFiles.forEach(file => {
         const filePath = path.join(__dirname, file);
 
         if (!fs.existsSync(filePath)) {
@@ -79,7 +116,15 @@ function generateSitemap() {
         const anchors = extractAnchors(htmlContent);
         const lastmod = getLastModTime(filePath);
 
-        console.log(`📄 扫描 ${file}: 找到 ${anchors.length} 个锚点`);
+        console.log(`📄 ${file}: 找到 ${anchors.length} 个锚点`);
+
+        // 添加文件本身
+        urls.push({
+            loc: `${config.baseUrl}/${file}`,
+            lastmod: lastmod,
+            changefreq: config.changefreq,
+            priority: '0.9'
+        });
 
         // 添加带锚点的 URL
         anchors.forEach(anchor => {
