@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://nano-banana.vercel.app/sitemap.xml
+Sitemap: https://nemotron3nano.com/sitemap.xml
